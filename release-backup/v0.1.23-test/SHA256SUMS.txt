@@ -1,0 +1,4 @@
+01a6fa9f9e25c1d2f13e9f40a10b064ea1dfb526eeaa0fc6c1d3035539c06f9e  FocusAllowlist-0.1.23-public-source.zip
+328cb592447cb643a55088b59e5b7e0a4bada126d918cac4160c1cb53fb9f75e  FocusAllowlist-0.1.23-test.apk
+80689d4ccef1df1721c71a6384e5911c5b70b76d56527f42ba9b4459bddd0a42  verification.json
+ce8edaf39b6a907b2a50cddfaf56e33f9e3d97442c92ec5f5f4e85256e3438ec  安装与测试说明.md
