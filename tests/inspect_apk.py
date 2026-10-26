@@ -3,13 +3,18 @@ import sys
 import zipfile
 import pathlib
 import re
+import argparse
 from loguru import logger
 logger.remove()
 from androguard.core.apk import APK
 from androguard.core.dex import DEX
 
-module = sys.argv[1]
-original = sys.argv[2]
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('module', help='Built module APK')
+parser.add_argument('original', nargs='?', help='Optional supported Xiaomi Settings APK')
+args = parser.parse_args()
+module = args.module
+original = args.original
 a = APK(module)
 assert a.get_package() == 'dev.lance.focusallowlist'
 assert a.get_permissions() == [], a.get_permissions()
@@ -19,7 +24,7 @@ assert a.get_androidversion_name() == '0.1.23-test'
 assert a.get_androidversion_code() == '24'
 x = a.get_android_manifest_xml()
 ns = '{http://schemas.android.com/apk/res/android}'
-policy_source = (pathlib.Path(__file__).resolve().parents[1] / 'src/dev/lance/focusallowlist/Policy.java').read_text()
+policy_source = (pathlib.Path(__file__).resolve().parents[1] / 'app/src/main/java/dev/lance/focusallowlist/Policy.java').read_text()
 app_block = policy_source.split('APPS = set(', 1)[1].split(');', 1)[0]
 apps = set(re.findall(r'"([^"]+)"', app_block))
 queries = {q.get(ns+'name') for q in x.findall('./queries/package')}
@@ -39,24 +44,32 @@ for name in ['page_background', 'surface', 'hero_background', 'icon_background',
     assert ('color', name) in resource_names, 'dynamic UI color missing: ' + name
 for name in ['icon_apps', 'icon_guide', 'icon_info', 'icon_back', 'icon_check', 'icon_chevron', 'module_art']:
     assert ('drawable', name) in resource_names, 'dynamic UI image missing: ' + name
-catalog = (pathlib.Path(__file__).resolve().parents[1] / 'src/dev/lance/focusallowlist/AppCatalog.java').read_text()
+catalog = (pathlib.Path(__file__).resolve().parents[1] / 'app/src/main/java/dev/lance/focusallowlist/AppCatalog.java').read_text()
 assert set(re.findall(r'names.put\("([^"]+)"', catalog)) == apps, 'display names must match fixed policy'
 with zipfile.ZipFile(module) as z:
     assert z.read('assets/xposed_init').decode().strip() == 'dev.lance.focusallowlist.FocusHook'
-    assert z.read('res/drawable-nodpi-v4/module_art.jpg') == (pathlib.Path(__file__).resolve().parents[1] / 'res/drawable-nodpi/module_art.jpg').read_bytes()
+    art_id = next(int(n.get('id'), 16) for n in public
+                  if n.get('type') == 'drawable' and n.get('name') == 'module_art')
+    # Release builds may shorten resource file paths; resolve through the table.
+    art_paths = {value for _, value in resources.get_resolved_res_configs(art_id)}
+    artwork = (pathlib.Path(__file__).resolve().parents[1] / 'app/src/main/res/drawable-nodpi/module_art.jpg').read_bytes()
+    assert art_paths and all(z.read(path) == artwork for path in art_paths)
     icon = a.get_android_resources().get_resolved_res_configs(int(app.get(ns+'icon')[1:], 16))
     assert icon, 'launcher icon must resolve'
-    dex = DEX(z.read('classes.dex'))
-    names = [c.get_name() for c in dex.get_classes()]
-    main_classes = [c for c in dex.get_classes() if c.get_name().startswith('Ldev/lance/focusallowlist/MainActivity')]
+    dex_files = [DEX(z.read(name)) for name in z.namelist()
+                 if re.fullmatch(r'classes(?:\d+)?\.dex', name)]
+    classes = {c.get_name(): c for dex in dex_files for c in dex.get_classes()}
+    strings = {s for dex in dex_files for s in dex.get_strings()}
+    names = list(classes)
+    main_classes = [c for c in classes.values() if c.get_name().startswith('Ldev/lance/focusallowlist/MainActivity')]
     ui_text = '\n'.join(i.get_output() for c in main_classes for m in c.get_methods() for i in m.get_instructions())
     assert '->startActivity(' in ui_text and '->startService(' not in ui_text
     assert not re.search(r'Landroid/provider/Settings\$(?:System|Global|Secure);->put', ui_text)
     assert '->getOnBackInvokedDispatcher(' in ui_text
-    assert apps <= set(dex.get_strings()), 'whitelist packages missing from built DEX'
+    assert apps <= strings, 'whitelist packages missing from built DEX'
     assert 'Ldev/lance/focusallowlist/FocusDuration;' in names
     assert 'Ldev/lance/focusallowlist/DurationPolicy;' in names
-    duration_classes = [c for c in dex.get_classes() if c.get_name().startswith('Ldev/lance/focusallowlist/FocusDuration')]
+    duration_classes = [c for c in classes.values() if c.get_name().startswith('Ldev/lance/focusallowlist/FocusDuration')]
     duration_instructions = '\n'.join(i.get_output() for c in duration_classes for m in c.get_methods() for i in m.get_instructions())
     assert not re.search(r'Landroid/provider/Settings\$(?:System|Global|Secure);->put', duration_instructions)
     assert '->putExtra(' in duration_instructions and '->setIntField(' in duration_instructions
@@ -66,10 +79,10 @@ with zipfile.ZipFile(module) as z:
     assert 'Ldev/lance/focusallowlist/FocusHook;' in names
     assert 'Ldev/lance/focusallowlist/FocusIsland;' in names
     assert 'Ldev/lance/focusallowlist/IslandRefreshLoop;' in names
-    hook_classes = [c for c in dex.get_classes() if c.get_name().startswith('Ldev/lance/focusallowlist/FocusHook')]
+    hook_classes = [c for c in classes.values() if c.get_name().startswith('Ldev/lance/focusallowlist/FocusHook')]
     recovery_calls = [(c.get_name(), m.get_name(), i.get_output()) for c in hook_classes for m in c.get_methods() for i in m.get_instructions() if 'Ldev/lance/focusallowlist/FocusIsland;->resume(' in i.get_output()]
     assert len(recovery_calls) >= 4, 'process, focus page create/resume and settings return must recover display'
-    monitor_classes = [c for c in dex.get_classes() if c.get_name().startswith('Ldev/lance/focusallowlist/FocusMonitor')]
+    monitor_classes = [c for c in classes.values() if c.get_name().startswith('Ldev/lance/focusallowlist/FocusMonitor')]
     assert monitor_classes and 'Ldev/lance/focusallowlist/MonitorRecovery;' in names
     monitor_text = '\n'.join(i.get_output() for c in monitor_classes for m in c.get_methods() for i in m.get_instructions())
     assert 'Landroid/content/Context;->startService(' in monitor_text
@@ -80,7 +93,7 @@ with zipfile.ZipFile(module) as z:
     assert 'Ldev/lance/focusallowlist/FocusHook;->checkForeground(' in monitor_text
     monitor_calls = [i.get_output() for c in hook_classes for m in c.get_methods() for i in m.get_instructions() if 'Ldev/lance/focusallowlist/FocusMonitor;->resume(' in i.get_output()]
     assert len(monitor_calls) >= 5
-    assert 'onTaskRemoved' in dex.get_strings()
+    assert 'onTaskRemoved' in strings
     foreground_check = next(m for c in hook_classes for m in c.get_methods() if m.get_name() == 'checkForeground')
     foreground_text = '\n'.join(i.get_output() for i in foreground_check.get_instructions())
     assert 'userId' in foreground_text and '->myUid(' in foreground_text and '->allow(' in foreground_text
@@ -88,32 +101,32 @@ with zipfile.ZipFile(module) as z:
     assert not any('MonitorRecoveryTest' in n for n in names)
     assert not any('ProcessLockLeaseTest' in n for n in names)
     assert 'Ldev/lance/focusallowlist/ProcessLockLease;' in names
-    guard_classes = [c for c in dex.get_classes() if c.get_name().startswith('Ldev/lance/focusallowlist/FocusProcessGuard')]
+    guard_classes = [c for c in classes.values() if c.get_name().startswith('Ldev/lance/focusallowlist/FocusProcessGuard')]
     guard_text = '\n'.join(i.get_output() for c in guard_classes for m in c.get_methods() for i in m.get_instructions())
     assert 'Landroid/os/HandlerThread;->start(' in guard_text
     assert 'Landroid/content/SharedPreferences$Editor;->commit(' in guard_text
     assert 'Landroid/content/ContentResolver;->registerContentObserver(' in guard_text
-    assert 'miui.process.ProcessManagerNative' in dex.get_strings()
-    assert 'isLockedApplication' in dex.get_strings() and 'updateApplicationLockedState' in dex.get_strings()
-    assert not {'protectCurrentProcess', 'onePushUpdateWhitelist'} & set(dex.get_strings())
+    assert 'miui.process.ProcessManagerNative' in strings
+    assert 'isLockedApplication' in strings and 'updateApplicationLockedState' in strings
+    assert not {'protectCurrentProcess', 'onePushUpdateWhitelist'} & strings
     assert not re.search(r'Landroid/provider/Settings\$(?:System|Global|Secure);->put', guard_text)
     assert '->startService(' not in guard_text and 'Ljava/lang/Runtime;' not in guard_text
-    guard_main = dex.get_class('Ldev/lance/focusallowlist/FocusProcessGuard;')
+    guard_main = classes.get('Ldev/lance/focusallowlist/FocusProcessGuard;')
     guard_resume = next(m for m in guard_main.get_methods() if m.get_name() == 'resume')
     guard_resume_text = '\n'.join(i.get_output() for i in guard_resume.get_instructions())
     assert '->getProcessName(' in guard_resume_text and '->myUid(' in guard_resume_text
     assert '->commit(' not in guard_resume_text and '->invoke(' not in guard_resume_text
-    navigation = dex.get_class('Ldev/lance/focusallowlist/FocusNavigation;')
+    navigation = classes.get('Ldev/lance/focusallowlist/FocusNavigation;')
     hidden = next(m for m in navigation.get_methods() if m.get_name() == 'hideInRecents')
     hidden_text = '\n'.join(i.get_output() for i in hidden.get_instructions())
     assert '->setExcludeFromRecents(' in hidden_text
     assert '->taskId ' in hidden_text and '->persistentId ' in hidden_text
     assert 'Ldev/lance/focusallowlist/RecentsPolicy;->hide(' in hidden_text
     assert '->getTaskInfo(' in hidden_text and '->getFlags(' in hidden_text
-    assert 'hideInRecents' in dex.get_strings() and 'showInRecents' not in dex.get_strings()
+    assert 'hideInRecents' in strings and 'showInRecents' not in strings
     assert 'Ldev/lance/focusallowlist/RecentsPolicy;' in names
     assert not any('RecentsPolicyTest' in n for n in names)
-    recents = dex.get_class('Ldev/lance/focusallowlist/FocusRecents;')
+    recents = classes.get('Ldev/lance/focusallowlist/FocusRecents;')
     assert recents is not None
     recents_text = '\n'.join(i.get_output() for m in recents.get_methods() for i in m.get_instructions())
     assert '->registerActivityLifecycleCallbacks(' in recents_text
@@ -128,9 +141,9 @@ with zipfile.ZipFile(module) as z:
     assert '->startService(' not in recents_text + hidden_text
     # Regression for the recorded SystemUI ModuleButtonViewHolder crash:
     # No action/button renderer or vendor timer is used in the replacement template.
-    assert not {'miui.focus.actions', 'timerInfo', 'timerSystemCurrent', 'canShowFocus'} & set(dex.get_strings())
-    assert {'miui.focus.pics', 'miui.focus.param', 'buttons-free-v2'} <= set(dex.get_strings())
-    island_classes = [c for c in dex.get_classes() if c.get_name().startswith('Ldev/lance/focusallowlist/FocusIsland')]
+    assert not {'miui.focus.actions', 'timerInfo', 'timerSystemCurrent', 'canShowFocus'} & strings
+    assert {'miui.focus.pics', 'miui.focus.param', 'buttons-free-v2'} <= strings
+    island_classes = [c for c in classes.values() if c.get_name().startswith('Ldev/lance/focusallowlist/FocusIsland')]
     island_instructions = '\n'.join(i.get_output() for c in island_classes for m in c.get_methods() for i in m.get_instructions())
     assert not re.search(r'Landroid/provider/Settings\$(?:System|Global|Secure);->put', island_instructions)
     assert 'Landroid/app/Application;->getProcessName(' in island_instructions
@@ -138,7 +151,7 @@ with zipfile.ZipFile(module) as z:
     assert 'Ldev/lance/focusallowlist/IslandRefreshLoop;->stop(' in island_instructions
     assert 'Ljava/lang/ref/WeakReference;' not in island_instructions, 'display no longer expires with service owner'
     assert '->startForeground(' not in island_instructions and '->startService(' not in island_instructions
-    island_main = dex.get_class('Ldev/lance/focusallowlist/FocusIsland;')
+    island_main = classes.get('Ldev/lance/focusallowlist/FocusIsland;')
     service_stop = next(m for m in island_main.get_methods() if m.get_name() == 'onServiceDestroyed')
     service_stop_text = '\n'.join(i.get_output() for i in service_stop.get_instructions())
     assert '->resume(' in service_stop_text and '->clear(' not in service_stop_text
@@ -167,6 +180,9 @@ with zipfile.ZipFile(module) as z:
     assert not any('RegressionTest' in n for n in names)
     assert not any('IslandTemplateDump' in n for n in names)
     assert not any('IslandRefreshLoopTest' in n for n in names)
+if original is None:
+    print('PASS:', len(apps), 'whitelist packages, manifest, permissions, Xposed entry and module DEX checks; target APK not supplied')
+    sys.exit(0)
 p = APK(original)
 assert p.get_androidversion_name() == '16.4.260829.00'
 assert p.get_androidversion_code() == '260829400'

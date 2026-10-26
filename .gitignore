@@ -1,5 +1,9 @@
 # Local toolchains and generated build outputs
 .toolchain/
+.gradle/
+.idea/
+**/build/
+*.iml
 .venv/
 out/
 test-out/
@@ -7,6 +11,7 @@ __pycache__/
 *.pyc
 *.class
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.dex
 *.apk
 *.zip

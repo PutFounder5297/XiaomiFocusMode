@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- This Hook posts using the Xiaomi Settings host context and its notification
+         permission. Adding POST_NOTIFICATIONS to the module cannot grant the host access. -->
+    <issue id="NotificationPermission">
+        <ignore path="src/main/java/dev/lance/focusallowlist/FocusIsland.java" />
+    </issue>
+    <!-- The statusbar service is a hidden Android service deliberately accessed
+         inside the host process; public SDK @ServiceName omits this constant. -->
+    <issue id="WrongConstant">
+        <ignore path="src/main/java/dev/lance/focusallowlist/FocusHook.java" />
+    </issue>
+</lint>
