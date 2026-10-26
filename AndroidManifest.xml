@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.lance.focusallowlist" android:versionCode="24" android:versionName="0.1.23-test">
+    <uses-sdk android:minSdkVersion="28" android:targetSdkVersion="35" />
+    <queries>
+        <package android:name="com.xiaomi.misettings" />
+        <package android:name="com.openai.chatgpt" />
+        <package android:name="com.google.android.googlequicksearchbox" />
+        <package android:name="org.telegram.messenger" />
+        <package android:name="org.telegram.messenger.web" />
+        <package android:name="md.obsidian" />
+        <package android:name="com.chaoxing.mobile" />
+        <package android:name="com.tencent.mm" />
+        <package android:name="com.tencent.mobileqq" />
+        <package android:name="com.android.contacts" />
+        <package android:name="com.android.mms" />
+        <package android:name="com.google.android.dialer" />
+        <package android:name="com.google.android.contacts" />
+        <package android:name="com.google.android.apps.messaging" />
+        <package android:name="com.baidu.drive.app" />
+        <package android:name="com.intsig.camscanner" />
+        <package android:name="com.tencent.weread" />
+        <package android:name="cn.xuexi.android" />
+        <package android:name="com.eg.android.AlipayGphone" />
+        <package android:name="com.xiaomi.smarthome" />
+        <package android:name="com.deepseek.harness" />
+        <package android:name="com.deepseek.harness.beta" />
+        <package android:name="com.deepseek.harness.compat" />
+        <package android:name="org.geogebra.android.calculator.suite" />
+        <package android:name="org.geogebra.android" />
+        <package android:name="org.geogebra.android.geometry" />
+        <package android:name="org.geogebra.android.g3d" />
+        <package android:name="org.geogebra.android.cascalc" />
+        <package android:name="org.geogebra.android.scicalc" />
+        <package android:name="me.weishu.kernelsu" />
+        <package android:name="moe.shizuku.privileged.api" />
+        <package android:name="mark.via" />
+        <package android:name="mark.via.gp" />
+        <package android:name="bin.mt.plus" />
+        <package android:name="bin.mt.plus.canary" />
+        <package android:name="com.omarea.vtools" />
+        <package android:name="bin.mt.termex" />
+        <package android:name="cn.wps.moffice_eng.xiaomi.lite" />
+        <package android:name="com.android.calendar" />
+        <package android:name="com.android.soundrecorder" />
+        <package android:name="com.flyersoft.moonreaderp" />
+        <package android:name="com.github.android" />
+        <package android:name="com.github.catfriend1.syncthingandroid" />
+        <package android:name="com.github.metacubex.clash.meta" />
+        <package android:name="com.microsoft.office.excel" />
+        <package android:name="com.microsoft.office.outlook" />
+        <package android:name="com.microsoft.office.powerpoint" />
+        <package android:name="com.microsoft.office.word" />
+        <package android:name="com.microsoft.skydrive" />
+        <package android:name="com.microsoft.todos" />
+        <package android:name="com.mipay.wallet" />
+        <package android:name="com.miui.calculator" />
+        <package android:name="com.miui.gallery" />
+        <package android:name="com.miui.notes" />
+        <package android:name="com.miui.weather2" />
+        <package android:name="com.safeincloud.free" />
+        <package android:name="com.termux" />
+        <package android:name="com.xiaomi.scanner" />
+    </queries>
+    <application android:label="专注模式" android:theme="@style/ModuleTheme"
+        android:icon="@mipmap/module_icon" android:roundIcon="@mipmap/module_icon"
+        android:allowBackup="false" android:supportsRtl="true">
+        <meta-data android:name="xposedmodule" android:value="true" />
+        <meta-data android:name="xposeddescription" android:value="小米原生专注应用白名单，定向适配 16.4.260829.00；保留应用锁与分身验证。" />
+        <meta-data android:name="xposedminversion" android:value="82" />
+        <meta-data android:name="xposedscope" android:resource="@array/xposed_scope" />
+        <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

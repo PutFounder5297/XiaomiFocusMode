@@ -1,0 +1,26 @@
+# Local toolchains and generated build outputs
+.toolchain/
+.venv/
+out/
+test-out/
+__pycache__/
+*.pyc
+*.class
+*.jar
+*.dex
+*.apk
+*.zip
+
+# Signing material must never be committed
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.key
+*.pem
+
+# Personal diagnostics and local configuration
+*.log
+CRASH-*.md
+local.properties
+.DS_Store

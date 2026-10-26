@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="page_background">#101620</color>
+    <color name="surface">#1B2533</color>
+    <color name="hero_background">#1C2C40</color>
+    <color name="icon_background">#273A53</color>
+    <color name="text_primary">#EDF3FC</color>
+    <color name="text_secondary">#BAC8DA</color>
+    <color name="text_muted">#91A4BE</color>
+    <color name="accent">#8CB9FF</color>
+    <color name="on_accent">#10233F</color>
+    <color name="divider">#2A3646</color>
+    <color name="ripple">#228CB9FF</color>
+    <color name="status_good">#8DCEB4</color>
+    <color name="status_warning">#F3C385</color>
+</resources>
