@@ -19,8 +19,11 @@ jobs:
           java-version: '17'
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.12'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - run: sdkmanager 'platforms;android-35' 'build-tools;34.0.0'
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew --no-daemon :app:testDebugUnitTest :app:verifyIsland :app:lintDebug :app:assembleDebug :app:assembleRelease
