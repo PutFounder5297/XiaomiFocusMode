@@ -1,7 +1,9 @@
 # 版本记录
 
-## 未发布
+## 0.1.24-test
 
+- 固定允许名单新增 Gemini（`com.google.android.apps.bard`）和 Google Play 商店（`com.android.vending`），同步应用名称与 Manifest 查询声明，名单共 59 个包名。
+- 发布 versionCode 25 测试包，附 APK 和 SHA256 校验清单；测试签名无法覆盖原归档 APK。
 - 迁移为 Android Studio / Gradle 单应用项目，增加固定版本 Wrapper。
 - 将原有 Java 检查接入 JUnit，保留超级岛 JSON 和 APK / ROM 静态检查。
 - APK 检查支持独立核对模块、多 DEX 和 Release 资源路径优化。
@@ -9,7 +11,7 @@
 - 将历史恢复与校验记录移至 `docs/ARCHIVE_STATUS.md`。
 - 将 Android 10 的强制深色主题属性移至 `values-v29`，保持 Android 9 资源兼容。
 
-本次仓库整理不修改模块版本或业务 Java 逻辑。
+此前的仓库结构整理未修改模块版本或业务 Java 逻辑。
 
 ## 0.1.23-test
 

@@ -12,13 +12,13 @@
 | 目标版本 | `16.4.260829.00` / versionCode `260829400` |
 | Android | 最低 Android 9（API 28）；不代表所有 ROM 均兼容 |
 | 运行环境 | 已可用的 LSPosed 环境，作用域只选择「小米设置」 |
-| 模块版本 | `0.1.23-test` / versionCode `24` |
+| 模块版本 | `0.1.24-test` / versionCode `25` |
 
 模块仅定向适配上述小米设置版本。目标版本不匹配时，不安装核心专注 Hook。
 
 ## 功能
 
-- 固定放行 57 个精确包名，名单见 [Policy.java](app/src/main/java/dev/lance/focusallowlist/Policy.java)，模块内可只读查看。
+- 固定放行 59 个精确包名，包含 Gemini 和 Google Play 商店，名单见 [Policy.java](app/src/main/java/dev/lance/focusallowlist/Policy.java)，模块内可只读查看。
 - 保留输入法、系统必要组件、微信/QQ 分身及原有密码、指纹验证流程。
 - 支持 1–35791 分钟的自定义整数时长；重复进入沿用原生会话和起始时间。
 - 提供深浅色模块界面、原生设置入口、超级岛倒计时和独立排障入口。

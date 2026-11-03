@@ -10,6 +10,8 @@ final class AppCatalog {
         Map<String, String> names = new LinkedHashMap<String, String>();
         names.put("com.openai.chatgpt", "ChatGPT");
         names.put("com.google.android.googlequicksearchbox", "Google（含圈定即搜）");
+        names.put("com.google.android.apps.bard", "Gemini");
+        names.put("com.android.vending", "Google Play 商店");
         names.put("md.obsidian", "Obsidian");
         names.put("com.chaoxing.mobile", "学习通");
         names.put("org.telegram.messenger", "Telegram · Play 版");

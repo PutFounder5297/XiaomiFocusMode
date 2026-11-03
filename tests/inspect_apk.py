@@ -20,8 +20,8 @@ assert a.get_package() == 'dev.lance.focusallowlist'
 assert a.get_permissions() == [], a.get_permissions()
 assert a.get_min_sdk_version() == '28'
 assert a.get_target_sdk_version() == '35'
-assert a.get_androidversion_name() == '0.1.23-test'
-assert a.get_androidversion_code() == '24'
+assert a.get_androidversion_name() == '0.1.24-test'
+assert a.get_androidversion_code() == '25'
 x = a.get_android_manifest_xml()
 ns = '{http://schemas.android.com/apk/res/android}'
 policy_source = (pathlib.Path(__file__).resolve().parents[1] / 'app/src/main/java/dev/lance/focusallowlist/Policy.java').read_text()

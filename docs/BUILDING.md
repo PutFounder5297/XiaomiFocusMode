@@ -46,6 +46,12 @@ CI 构建 Debug、未签名 Release，并运行 JUnit、JSON 和 Android Lint �
 
 `app/lint.xml` 只对两处宿主 Hook 调用做定向排除：宿主通知权限和隐藏的 `statusbar` 服务名。其余 Lint 检查继续执行，警告保留在报告中。
 
+## 发布测试包
+
+更新模块版本、`tests/inspect_apk.py` 中的预期版本和 `docs/releases/<版本>.md` 发布说明后，修改 `.github/release-request.json` 中的版本与 versionCode 并提交到 `main`，会触发 `Publish test APK`。也可手动运行该工作流。
+
+工作流检查通过后，将 Debug 测试 APK 和 `SHA256SUMS.txt` 发布为 GitHub 预发布版本，不覆盖已有版本。附件使用 Actions 构建环境生成的调试签名，不能保证与原归档 APK 或其他环境的测试包同签名。
+
 ## 签名
 
 Debug 使用本机 Android 调试签名。Release 默认不配置签名，不使用调试密钥冒充正式发布包。原签名私钥不在备份中，无法从 APK 恢复；新签名不能覆盖旧签名安装包。

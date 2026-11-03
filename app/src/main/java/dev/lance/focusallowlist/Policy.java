@@ -13,6 +13,7 @@ public final class Policy {
     public static final int VERSION_CODE = 260829400;
     public static final Set<String> APPS = set(
         "com.openai.chatgpt", "com.google.android.googlequicksearchbox", "md.obsidian", "com.chaoxing.mobile",
+        "com.google.android.apps.bard", "com.android.vending",
         "org.telegram.messenger", "org.telegram.messenger.web",
         "com.tencent.mm", "com.tencent.mobileqq", "com.android.contacts", "com.android.mms",
         "com.google.android.dialer", "com.google.android.contacts", "com.google.android.apps.messaging",
